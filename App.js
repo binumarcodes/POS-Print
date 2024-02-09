@@ -44,10 +44,14 @@ export default function App() {
           <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no" />
         </head>
         <body style="text-align: left; padding: 20px;">
+          <h1 style="text-align: center; font-size: 40px;">Insyllium</h1>
+          <hr />
           <h1>Receipt</h1>
           <h5>Date: ${currentDate} - Time: ${currentTime}</h5>
           ${itemsHTML}
           <h6 style="font-weight: bold; font-size: 16px;">Total: $${total.toFixed(2)}</h6>
+          <hr />
+          <p style="text-align: center">Thanks for choosing us</p>
         </body>
       </html>
     `;
