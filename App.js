@@ -2,12 +2,22 @@ import * as React from 'react';
 import { View, StyleSheet, Button, Platform, Text, TextInput, Image, SafeAreaView } from 'react-native';
 import * as Print from 'expo-print';
 import { shareAsync } from 'expo-sharing';
+import QRCode from 'react-native-qrcode-svg';
+import { useState } from 'react';
 
 export default function App() {
-  const [selectedPrinter, setSelectedPrinter] = React.useState();
-  const [itemName, setItemName] = React.useState('');
-  const [itemPrice, setItemPrice] = React.useState('');
-  const [receiptItems, setReceiptItems] = React.useState([]);
+  const [selectedPrinter, setSelectedPrinter] = useState();
+  const [itemName, setItemName] = useState('');
+  const [itemPrice, setItemPrice] = useState('');
+  const [receiptItems, setReceiptItems] = useState([]);
+
+  const generateQRData = () => {
+    const receiptData = JSON.stringify({
+      date: new Date().toLocaleString(),
+      items: receiptItems,
+    });
+    return receiptData;
+  };
 
   const printReceipt = async () => {
     const receiptHTML = generateReceiptHTML();
@@ -32,11 +42,13 @@ export default function App() {
     let total = 0;
     receiptItems.forEach(item => {
       itemsHTML += `<p>${item.name}: $${item.price}</p>`;
-    total += parseFloat(item.price);
+      total += parseFloat(item.price);
     });
 
     const currentDate = new Date().toLocaleDateString();
     const currentTime = new Date().toLocaleTimeString();
+
+    const qrCodeData = generateQRData();
 
     return `
       <html>
@@ -44,17 +56,27 @@ export default function App() {
           <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no" />
         </head>
         <body style="text-align: left; padding: 20px;">
-          <h1 style="text-align: center; font-size: 40px;">Insyllium</h1>
-          <hr />
+          <h1 style="text-align: center; font-size: 60px;">Insyllium</h1>
+          <HR />
           <h1>Receipt</h1>
           <h5>Date: ${currentDate} - Time: ${currentTime}</h5>
           ${itemsHTML}
           <h6 style="font-weight: bold; font-size: 16px;">Total: $${total.toFixed(2)}</h6>
+          ${generateQRCodeSVG(qrCodeData)} <!-- Include the QR code SVG here -->
           <hr />
           <p style="text-align: center">Thanks for choosing us</p>
         </body>
       </html>
     `;
+  };
+
+  const generateQRCodeSVG = (data) => {
+    return (
+      <QRCode
+        value={data}
+        size={200}
+      />
+    );
   };
 
   const addItem = () => {
@@ -67,7 +89,7 @@ export default function App() {
   };
 
   const selectPrinter = async () => {
-    const printer = await Print.selectPrinterAsync(); 
+    const printer = await Print.selectPrinterAsync({ type: Print.PrinterTypes.Bluetooth }); 
     setSelectedPrinter(printer);
   };
 
@@ -156,5 +178,9 @@ const styles = StyleSheet.create({
     marginBottom: 5,
     color: "#fff"
   },
-
+  logo: {
+    width: 200,
+    height: 100,
+    marginBottom: 20,
+  }
 });
